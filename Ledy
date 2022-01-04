@@ -1,0 +1,306 @@
+#include <Adafruit_NeoPixel.h>
+#include <IRremote.h>
+
+#define LED_PIN 6
+#define LED_COUNT 8 //ale normalnie jest 87
+#define przycisk_0 3772811383
+#define przycisk_1 3772784863
+#define przycisk_2 3772817503
+#define przycisk_3 3772801183
+#define przycisk_4 3772780783
+#define przycisk_5 3772813423
+#define przycisk_6 3772797103
+#define przycisk_7
+#define przycisk_8 3772821583
+#define przycisk_9 3772805263
+#define przycisk_MUTE 3772837903
+#define przycisk_minus 3772829743
+#define przycisk_plus 3772833823
+#define przycisk_CH_LIST 3772831273
+
+Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+int IR_Recv = 2;
+int led = 6;
+int stage;
+int brightness;
+
+IRrecv irrecv(IR_Recv);
+decode_results results;
+
+void setup()
+{
+  attachInterrupt(digitalPinToInterrupt(0), back, FALLING);
+  strip.begin();
+  strip.show();
+  strip.setBrightness(50);
+
+  Serial.begin(9600);
+  irrecv.enableIRIn();
+  pinMode(IR_Recv, INPUT);
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+}
+
+void loop()
+{
+  if (irrecv.decode(&results))
+  {
+    long int decCode = results.value;
+    Serial.println(results.value);
+
+    pilot();
+
+    irrecv.resume();
+  }
+  delay(2);
+}
+
+void niebieski(int stage)
+{
+  stage = 1;
+  for (int i = 0; i < LED_COUNT; i++)
+  {
+    strip.setPixelColor(i, 0, 255, 0);
+    strip.setBrightness(brightness);
+    strip.show();
+    delay(0);
+  }
+}
+
+void zielony(int stage)
+{
+  stage = 2;
+  for (int i = 0; i < LED_COUNT; i++)
+  {
+    strip.setPixelColor(i, 0, 0, 255);
+    strip.setBrightness(brightness);
+    strip.show();
+    delay(0);
+  }
+}
+void czerwony(int stage)
+{
+  stage = 3;
+  for (int i = 0; i < LED_COUNT; i++)
+  {
+    strip.setPixelColor(i, 255, 0, 0);
+    strip.setBrightness(brightness);
+    strip.show();
+    delay(0);
+  }
+}
+void bialy(int stage)
+{
+  stage = 4;
+  for (int i = 0; i < LED_COUNT; i++)
+  {
+    strip.setPixelColor(i, 255, 255, 255);
+    strip.setBrightness(brightness);
+    strip.show();
+    delay(0);
+  }
+}
+void blekitny(int stage)
+{
+  stage = 5;
+  for (int i = 0; i < LED_COUNT; i++)
+  {
+    strip.setPixelColor(i, 0, 255, 255);
+    strip.setBrightness(brightness);
+    strip.show();
+    delay(0);
+  }
+}
+void fioletowy(int stage)
+{
+  stage = 6;
+  for (int i = 0; i < LED_COUNT; i++)
+  {
+    strip.setPixelColor(i, 255, 255, 0);
+    strip.setBrightness(brightness);
+    strip.show();
+    delay(0);
+  }
+}
+void pomaranczowy(int stage)
+{
+  stage = 8;
+  for (int i = 0; i < LED_COUNT; i++)
+  {
+    strip.setPixelColor(i, 230, 0, 80);
+    strip.setBrightness(brightness);
+    strip.show();
+    delay(0);
+  }
+}
+
+uint32_t Wheel(byte WheelPos)
+{
+  if (WheelPos < 85)
+  {
+    return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+  }
+  else if (WheelPos < 170)
+  {
+    WheelPos -= 85;
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  else
+  {
+    WheelPos -= 170;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+}
+
+void back()
+{
+  switch (stage)
+  {
+  case 1:
+    niebieski(stage);
+    break;
+
+  case 2:
+    zielony(stage);
+    break;
+
+  case 3:
+    czerwony(stage);
+    break;
+
+  case 4:
+    bialy(stage);
+    break;
+
+  case 5:
+    blekitny(stage);
+    break;
+
+  case 6:
+    fioletowy(stage);
+    break;
+
+  case 8:
+    pomaranczowy(stage);
+    break;
+  }
+}
+
+void pilot()
+{
+
+  switch (results.value)
+  {
+  case 3772811383: //wyczyszczenie przycisk "0"
+    for (int i = 0; i < LED_COUNT; i++)
+    {
+      strip.clear();
+      strip.show();
+      delay(1);
+    }
+
+    break;
+
+  case przycisk_1: //niebieski przycisk "1"
+    niebieski(stage);
+    break;
+
+  case przycisk_2: //zielony przycisk "2"
+    zielony(stage);
+    break;
+
+  case przycisk_3: //czerwony przycisk "3"
+    czerwony(stage);
+    break;
+
+  case przycisk_4: //biały przycisk "4"
+    bialy(stage);
+    break;
+
+  case przycisk_5: //miętowy przycisk "5"
+    blekitny(stage);
+    break;
+
+  case przycisk_6: //fioletowy przycisk "6"
+    fioletowy(stage);
+    break;
+
+  case przycisk_8: //pomarańczowy przycisk "8" bo 7 nie dziala
+    pomaranczowy(stage);
+    break;
+
+  case przycisk_9: //tęcza przycisk "9"
+    do
+    {
+      rainbow(30);
+      delay(1);
+      irrecv.resume();
+      Serial.println(results.value);
+    } while (results.value != 0 || 3772789963);
+
+    break;
+
+  case przycisk_minus: //jasnosc 20 mniej ""
+  {
+    delay(50);
+    if (brightness >= 22, brightness <= 255)
+    {
+      brightness = brightness - 20;
+    }
+    strip.setBrightness(brightness);
+    strip.show();
+    back();
+  }
+  break;
+
+  case przycisk_plus: //wysoka jasnosc "+"
+  {
+    //brightness = brightness + 20;
+    delay(50);
+    if (brightness >= 1, brightness <= 224)
+    {
+      brightness = brightness + 20;
+    }
+    strip.setBrightness(brightness);
+    strip.show();
+    back();
+  }
+  break;
+
+  case przycisk_MUTE: //bardzo niska jasnosc "MUTE"
+      {
+      brightness = 5;
+      strip.setBrightness(brightness);
+      strip.show();
+      }
+      break;
+
+     case przycisk_CH_LIST: //srednia jasnosc "CH LIST"
+      {
+      brightness = 100;
+      strip.setBrightness(brightness);
+      strip.show();
+      }
+      break;
+
+  default: //domyslnie są wyłączane
+    strip.clear();
+    break;
+  }
+}
+
+void rainbow(uint8_t wait)
+{
+  uint16_t i, j;
+
+  for (j = 0; j < 256; j++)
+  {
+    for (i = 0; i < strip.numPixels(); i++)
+    {
+      strip.setPixelColor(i, Wheel((i * 1 + j) & 255));
+    }
+    strip.show();
+    delay(wait);
+  }
+}
